@@ -1,0 +1,32 @@
+name: React Frontend Production Deploy
+
+on:
+  push:
+    branches:
+      - main  # Fires automatically whenever you push code changes to the main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest  # Boots up a clean, headless Linux machine to process your code
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4  # Clones your repository into the runner environment
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Compile Distribution Package
+        run: |
+          npm ci              # Runs a clean installation of your dependencies
+          npm run build       # Compiles the React codebase into static files in /dist
+
+      - name: Ship Distribution Package to Azure
+        uses: azure/webapps-deploy@v3  # Securely sends the bundle to Azure
+        with:
+          app-name: 'expense-tracker-react-Funso'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # References the secret key
+          package: './dist'
